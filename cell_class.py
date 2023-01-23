@@ -5,22 +5,20 @@ import sys
 class Cell:
     def __init__(self, number):
         self.number = number
-        # self.color = "white"
-        # adjacent same-color cells
-        self.adjacent_cells = set()
+        self.adjacent_cells = set()  # adjacent same-color cells
 
 
 def check_win_traverse(cell, traversed, head, tail, color):
     traversed.add(cell)
-    if color:  # blue
+    if color == 1:  # blue
         if cell.number % 7 == 0:
             head = True
         if cell.number % 7 == 6:
             tail = True
     else:  # red
-        if cell.number / 7 == 0:
+        if cell.number // 7 == 0:
             head = True
-        if cell.number / 7 == 0:
+        if cell.number // 7 == 6:
             tail = True
     for adj_cell in cell.adjacent_cells:
         if adj_cell not in traversed:
@@ -34,7 +32,7 @@ def check_win(player_set, color):
         head = False
         tail = False
         if cell not in traversed:
-            check_win_traverse(cell, traversed, head, tail, color)
+            head, tail = check_win_traverse(cell, traversed, head, tail, color)
             if head and tail:
                 return True
     return False
@@ -43,21 +41,13 @@ def check_win(player_set, color):
 def calculate_utility_traverse(cell, traversed, total_thread_length, horizontal_indices, vertical_indices):
     traversed.add(cell)
     horizontal_indices.append(cell.number % 7)
-    vertical_indices.append(cell.number / 7)
+    vertical_indices.append(cell.number // 7)
     if len(cell.adjacent_cells - traversed) != 0:
         total_thread_length += 1
     for adj_cell in cell.adjacent_cells:
         if adj_cell not in traversed:
             total_thread_length = calculate_utility_traverse(adj_cell, traversed, total_thread_length, horizontal_indices, vertical_indices)
     return total_thread_length
-    # sum_of_remainders = 0
-    # if cell not in traversed:
-    #     traversed.add(cell)
-    #     total_thread_length += 1
-    #     sum_of_remainders += cell.number % 7
-    #     for adj_cell in cell.adjacent_cells:
-    #         traverse(cell, total_thread_length, traversed)
-    # return traversed,
 
 
 def calculate_utility(player_set, color):
@@ -74,10 +64,10 @@ def calculate_utility(player_set, color):
         horizontal_indices_pstdev += 1/sys.maxsize
     if vertical_indices_pstdev == 0:
         vertical_indices_pstdev += 1/sys.maxsize
-    if color:  # blue
-        utility = total_thread_length * horizontal_indices_pstdev / vertical_indices_pstdev
+    if color == 1:  # blue
+        utility = pow(horizontal_indices_pstdev / vertical_indices_pstdev, total_thread_length)
     else:  # red
-        utility = total_thread_length * vertical_indices_pstdev / horizontal_indices_pstdev
+        utility = pow(vertical_indices_pstdev / horizontal_indices_pstdev, total_thread_length)
     return utility
 
 
@@ -87,7 +77,7 @@ def color_cell(player_set, white_set, white_cell):
     for fellow_cell in player_set:
         FCN = fellow_cell.number
         WCN = white_cell.number
-        if FCN == WCN-7 or WCN-6 or WCN-1 or WCN+1 or WCN+6 or WCN+7:
+        if FCN == WCN-7 or FCN == WCN-6 or FCN == WCN-1 or FCN == WCN+1 or FCN == WCN+6 or FCN == WCN+7:
             fellow_cell.adjacent_cells.add(white_cell)
             white_cell.adjacent_cells.add(fellow_cell)
 
@@ -98,7 +88,7 @@ def uncolor_cell(player_set, white_set, white_cell):
     for fellow_cell in player_set:
         FCN = fellow_cell.number
         WCN = white_cell.number
-        if FCN == WCN-7 or WCN-6 or WCN-1 or WCN+1 or WCN+6 or WCN+7:
+        if FCN == WCN-7 or FCN == WCN-6 or FCN == WCN-1 or FCN == WCN+1 or FCN == WCN+6 or FCN == WCN+7:
             fellow_cell.adjacent_cells.remove(white_cell)
             white_cell.adjacent_cells.remove(fellow_cell)
 
@@ -106,7 +96,10 @@ def uncolor_cell(player_set, white_set, white_cell):
 def negamax(player_set, opponent_set, white_set, depth, alpha, beta, color):
     # color: 1 for blue, -1 for red
     if depth == 0 or len(white_set) == 0 or check_win(opponent_set, -color):
-        return color * (calculate_utility(player_set, color) - calculate_utility(opponent_set, color)), None
+        if color == 1:
+            return color * (calculate_utility(player_set, color) - calculate_utility(opponent_set, -color)), None
+        else:
+            return color * (calculate_utility(opponent_set, -color) - calculate_utility(player_set, color)), None
     value = -sys.maxsize
     move = -1
     for white_cell in white_set.copy():
@@ -143,10 +136,8 @@ def main():
     while True:
         if turn:
             print("CPU turn : ")
-            # shomareye khoneiy ke entekhab shode ro bedin be place_of_move
-            _, place_of_move = negamax(blue_set, red_set, white_set, 3, -sys.maxsize, sys.maxsize, 1)
+            _, place_of_move = negamax(blue_set, red_set, white_set, 4, -sys.maxsize, sys.maxsize, 1)
             color_cell(blue_set, white_set, cell_list[place_of_move])
-            # place_of_move += 1
             print(place_of_move)
             list_of_lines[place_of_move] = "B "
             console(list_of_lines)
@@ -168,7 +159,7 @@ def main():
             color_cell(red_set, white_set, cell_list[place_of_move])
             list_of_lines[place_of_move] = "R "
             console(list_of_lines)
-            if check_win(red_set, 0):
+            if check_win(red_set, 1):
                 print("Red won.")
                 break
             if len(white_set) == 0:
