@@ -173,17 +173,27 @@ def console(lines):
     count2 = 7
     row_space = 0
     for i in range(0, 9):
-        print("R   ", end=" ")
+        print("\033[31mR   ", end=" ")
+    print("\033[0m", end="")
 
     for i in range(0, 8):
         for numOfRow in range(0, row_space):
             print(" ", end=" ")
         if i != 0:
             print(" ",  end=" ")
-            print("B   ", end=" ")
+            print("\033[34mB\033[0m   ", end=" ")
             for line in range(count1, count2):
+                colored = False
+                if "B" in lines[line]:
+                    colored = True
+                    print("\033[34m", end="")
+                if "R" in lines[line]:
+                    colored = True
+                    print("\033[31m", end="")
                 print(lines[line] + "  ", end=" ")
-            print(" B")
+                if colored:
+                    print("\033[0m", end="")
+            print(" \033[34mB\033[0m")
             count1 += 7
             count2 += 7
             row_space += 1
@@ -193,13 +203,14 @@ def console(lines):
     for numOfRowSpaceForRed in range(0, row_space+1):
         print(" ", end=" ")
 
+    print("\033[31m", end="")
     for i in range(0, 9):
         print("R   ", end=" ")
+    print("\033[0m", end="")
 
     print("\nplayer (RED) connects horizontally. ")
     print("CPU (BLUE) connects vertically. ")
     print()
-
 
 if __name__ == "__main__":
     main()
