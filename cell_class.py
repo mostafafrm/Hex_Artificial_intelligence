@@ -159,7 +159,7 @@ def main():
             color_cell(red_set, white_set, cell_list[place_of_move])
             list_of_lines[place_of_move] = "R "
             console(list_of_lines)
-            if check_win(red_set, 1):
+            if check_win(red_set, -1):
                 print("Red won.")
                 break
             if len(white_set) == 0:
