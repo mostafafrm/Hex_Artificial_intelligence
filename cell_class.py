@@ -139,7 +139,9 @@ def negamax(player_set: set[Cell], opponent_set: set[Cell], white_set: set[Cell]
     move = -1
     for white_cell in white_set.copy():
         color_cell(player_set, white_set, white_cell)
-        negamax_result, _ = negamax(opponent_set, player_set, white_set, depth - 1, -beta, -alpha, -color)
+        negamax_result, move_candidate = negamax(opponent_set, player_set, white_set, depth - 1, -beta, -alpha, -color)
+        if move_candidate == -1:
+            break
         uncolor_cell(player_set, white_set, white_cell)
         if -negamax_result > value:
             move = white_cell.number
