@@ -86,7 +86,12 @@ def uncolor_cell(player_set, white_set, white_cell):
 def negamax(player_set: set[Cell], opponent_set: set[Cell], white_set: set[Cell], depth: int, alpha, beta, color):
     # color: 1 for blue, -1 for red
     utility = calculate_utility(opponent_set, -color)
-    if depth == 0 or len(white_set) == 0 or utility == 6:
+    if utility == 6:
+        if color == 1:
+            return color * -sys.maxsize, None
+        else:
+            return color * sys.maxsize, None
+    if depth == 0 or len(white_set) == 0:
         if color == 1:
             return color * (calculate_utility(player_set, color) - calculate_utility(opponent_set, -color)), None
         else:
@@ -129,7 +134,7 @@ def main():
     while True:
         if turn:
             print("CPU turn : ")
-            _, place_of_move = negamax(blue_set, red_set, white_set, 4, -sys.maxsize, sys.maxsize, 1)
+            _, place_of_move = negamax(blue_set, red_set, white_set, 5, -sys.maxsize, sys.maxsize, 1)
             color_cell(blue_set, white_set, cell_list[place_of_move])
             print(place_of_move)
             list_of_lines[place_of_move] = "B "
