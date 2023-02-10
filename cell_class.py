@@ -1,5 +1,6 @@
 import sys
 from itertools import chain
+from math import factorial
 
 
 class Cell:
@@ -39,6 +40,7 @@ class Cell:
 
         return possible_neighbors_set
 
+
 def calculate_utility_traverse(cell, traversed, head, tail, color):
     traversed.add(cell)
     if color == 1:  # blue
@@ -52,6 +54,7 @@ def calculate_utility_traverse(cell, traversed, head, tail, color):
             head, tail = calculate_utility_traverse(adj_cell, traversed, head, tail, color)
     return head, tail
 
+
 def calculate_utility(player_set, color):
     traversed = set()
     longest_thread = 0  # longest head-to-tail difference
@@ -62,8 +65,9 @@ def calculate_utility(player_set, color):
             else:
                 head = tail = cell.number // 7
             head, tail = calculate_utility_traverse(cell, traversed, head, tail, color)
-            longest_thread = max(longest_thread, tail-head)
+            longest_thread = max(longest_thread, tail - head)
     return longest_thread
+
 
 def color_cell(player_set: set[Cell], white_set: set[Cell], white_cell: Cell):
     white_set -= {white_cell}
@@ -85,24 +89,23 @@ def uncolor_cell(player_set, white_set, white_cell):
 
 def negamax(player_set: set[Cell], opponent_set: set[Cell], white_set: set[Cell], depth: int, alpha, beta, color):
     # color: 1 for blue, -1 for red
-    utility = calculate_utility(opponent_set, -color)
-    if utility == 6:
+    player_utility = calculate_utility(player_set, color)
+    opponent_utility = calculate_utility(opponent_set, -color)
+    if opponent_utility == 6:
         if color == 1:
-            return color * -sys.maxsize, None
+            return color * -100, None
         else:
-            return color * sys.maxsize, None
+            return color * 100, None
     if depth == 0 or len(white_set) == 0:
         if color == 1:
-            return color * (calculate_utility(player_set, color) - calculate_utility(opponent_set, -color)), None
+            return color * (player_utility * (player_utility + 1) - opponent_utility * (opponent_utility + 1)), None
         else:
-            return color * (calculate_utility(opponent_set, -color) - calculate_utility(player_set, color)), None
+            return color * (opponent_utility * (opponent_utility + 1) - player_utility * (player_utility + 1)), None
     value = -sys.maxsize
     move = list(white_set)[0].number
     for white_cell in white_set.copy():
         color_cell(player_set, white_set, white_cell)
-        negamax_result, move_candidate = negamax(opponent_set, player_set, white_set, depth - 1, -beta, -alpha, -color)
-        if move_candidate == -1:
-            break
+        negamax_result, ـ = negamax(opponent_set, player_set, white_set, depth - 1, -beta, -alpha, -color)
         uncolor_cell(player_set, white_set, white_cell)
         if -negamax_result > value:
             move = white_cell.number
